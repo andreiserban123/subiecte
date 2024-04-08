@@ -1,53 +1,63 @@
-import numpy as np
+import math
 
+import numpy
 
-def fitness(x1, x2, x3, x4):
-    return 1 + np.sin(2 * x1 - x3) + (x2 * x4) ** (1 / 3)
+def fitness(indiv):
+    x1 = indiv[0]
+    x2 = indiv[1]
+    x3 = indiv[2]
+    x4 = indiv[3]
+    return (1 + math.sin(2*x1 - x3) + (x2+ x4) ** 1/3)
 
-
-def gen(dim):
-    pop = []
+def generare_populatie_initiala(dim):
+    population = []
     for i in range(dim):
-        x1 = np.random.uniform(-1, 1)
-        x2 = np.random.uniform(0, 0.2)
-        x3 = np.random.uniform(0, 1)
-        x4 = np.random.uniform(0, 5)
-        f = fitness(x1, x2, x3, x4)
-        x = [x1, x2, x3, x4, f]
-        pop.append(x)
-    return pop
+        indiv = []
+        x1 = numpy.random.uniform(-1, 1)
+        x2 = numpy.random.uniform(0, 0.2)
+        x3 = numpy.random.uniform(0, 1)
+        x4 = numpy.random.uniform(0, 5)
+        indiv.append(x1)
+        indiv.append(x2)
+        indiv.append(x3)
+        indiv.append(x4)
+        fit = fitness(indiv)
+        indiv.append(fit)
+        population.append(indiv)
+    return population
 
+populatie_initiala = generare_populatie_initiala(10)
+print(populatie_initiala)
 
-# Generate the initial population
-pop = gen(12)
-pop = np.asarray(pop)
-pop.shape
+def mutatie_fluaj(pop, pm, t=0.6):
+    dim = len(pop)
+    nr_gene = len(pop[0]) - 1
+    next_gen = [indiv[:-1] for indiv in pop]
+    for i in range(dim):
+        for j in range(nr_gene):
+            r = numpy.random.uniform(0,1)
+            if r < pm:
+                next_gen[i][j] += numpy.random.uniform(-t, t)
+                if j == 0 and next_gen[i][j] < -1:
+                    next_gen[i][j] = -1
+                elif j == 0 and next_gen[i][j] > 1:
+                    next_gen[i][j] = 1
+                elif j == 1 and next_gen[i][j] < 0:
+                    next_gen[i][j] = 0
+                elif j == 1 and next_gen[i][j] > 0.2:
+                    next_gen[i][j] = 0.2
+                elif j == 2 and next_gen[i][j] < 0:
+                    next_gen[i][j] = 0
+                elif j == 2 and next_gen[i][j] > 1:
+                    next_gen[i][j] = 1
+                elif j == 3 and next_gen[i][j] < 0:
+                    next_gen[i][j] = 0
+                elif j == 3 and next_gen[i][j] > 5:
+                    next_gen[i][j] = 5
+    for i in range(dim):
+        fit = fitness(next_gen[i])
+        next_gen[i].append(fit)
+    return next_gen
 
-
-def mutation(pop, pm, t=0.6):
-    sigma = t / 3
-    mutated_pop = pop.copy()
-    for i in range(mutated_pop.shape[0]):
-        if np.random.rand() < pm:
-            for j in range(mutated_pop.shape[1] - 1):  # Exclude the fitness value from mutation
-                mutated_pop[i][j] += np.random.normal(0, sigma)
-                # Make sure the mutated gene is within the specified bounds
-                if j == 0:
-                    mutated_pop[i][j] = np.clip(mutated_pop[i][j], -1, 1)
-                elif j == 1:
-                    mutated_pop[i][j] = np.clip(mutated_pop[i][j], 0, 0.2)
-                elif j == 2:
-                    mutated_pop[i][j] = np.clip(mutated_pop[i][j], 0, 1)
-                elif j == 3:
-                    mutated_pop[i][j] = np.clip(mutated_pop[i][j], 0, 5)
-            # Recalculate the fitness for the mutated individual
-            mutated_pop[i][-1] = fitness(*mutated_pop[i][:-1])
-    return mutated_pop
-
-
-# Define mutation probability
-pm = 0.1  # Example mutation probability
-
-# Apply mutation to the population
-mutated_pop = mutation(pop, pm)
-mutated_pop
+pop_mutatie = mutatie_fluaj(populatie_initiala, 0.2)
+print(pop_mutatie)
