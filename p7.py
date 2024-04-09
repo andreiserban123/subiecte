@@ -1,42 +1,36 @@
-# Problema 7
 import numpy
 
+#Individ fara fitness
+def fitness(indiv):
+    fit = 0
+    for i in range(len(indiv) - 1):
+        for j in range(i + 1, len(indiv)):
+            if indiv[i] == j and indiv[j] == i:
+                fit += 1
+    return fit
 
-def fitness(indiv):  # de tip permutare
-    counter = 0
-    n = len(indiv)
-    for i in range(n - 1):
-        for j in range(i + 1, n):
-            if indiv[i] == indiv[j] and indiv[j] == indiv[i]:
-                counter += 1
-    return counter
-
-
-def pop_permutari(dim, nr_gene):
+def generare_populatie(dim, n):
     pop = []
     for i in range(dim):
-        indiv = numpy.random.permutation(nr_gene)
-        fit = fitness(indiv)
+        indiv = numpy.random.permutation(n)
         indiv = list(indiv)
-        indiv.append(fit)
+        indiv.append(fitness(indiv))
         pop.append(indiv)
     return pop
 
+pop = generare_populatie(5, 5)
+print(pop)
 
-def mutatie_permutari(pop, pm):
+def mutatie_amestec(pop, pm):
     popm = []
     for indiv in pop:
-        if numpy.random.rand() < pm:
-            n = len(indiv) - 1  # Excluzând valoarea de fitness
-            i, j = numpy.random.choice(range(n), 2, replace=False)  # Alegem două poziții la întâmplare
-            # Schimbăm genele
-            indiv[i], indiv[j] = indiv[j], indiv[i]
-            # Recalculăm fitness-ul după mutație
-            fit = fitness(indiv[:-1])  # Apelăm fitness fără valoarea de fitness veche
-            indiv[-1] = fit  # Actualizăm valoarea de fitness
+        n = len(indiv)
+        if numpy.random.uniform(0, 1) < pm:
+            index1, index2 = numpy.random.choice(range(n), 2, replace=False)
+            indiv[index1], indiv[index2] = indiv[index2], indiv[index1]
+            indiv[-1] = fitness(indiv[0:-1])
         popm.append(indiv)
     return popm
 
-
-pop_i_permutari = pop_permutari(20, 20)
-print(numpy.asarray(pop_i_permutari))
+popm = mutatie_amestec(pop, 0.2)
+print(popm)

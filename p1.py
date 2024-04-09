@@ -1,54 +1,37 @@
-import numpy as np
+import numpy
 
+def fitness(indiv):
+    nr_gene = len(indiv)
+    fit = 0
+    for i in range(nr_gene - 1):
+        for j in range(i + 1, nr_gene):
+            if indiv[i] == j and indiv[j] == i:
+                fit += 1
+    return fit
 
-def fitness(x):
-    counter = 0
-    n = len(x)
-    for i in range(n - 1):
-        for j in range(i + 1, n):
-            if x[i] == j and x[j] == i:
-                counter += 1
-    return counter
-
-
-def gen_pop(dim, n):
+def generare_populatie_initiala(dim, nr_gene):
     pop = []
     for i in range(dim):
-        x = np.random.permutation(n)
-        x = list(x)
-        f = fitness(x)
-        x += [f]
-        pop.append(x)
+        indiv = numpy.random.permutation(nr_gene)
+        indiv = list(indiv)
+        indiv.append(fitness(indiv))
+        pop.append(indiv)
     return pop
 
+pop = generare_populatie_initiala(5, 5)
+print(pop)
 
-def inserare(x):
-    n = len(x)
-    i = np.random.randint(0, n - 1)
-    j = np.random.randint(i + 1, n)
-    r = x.copy()
-    r[i + 1] = x[j]
-    if i + 1 < j:
-        r[i + 2:j + 1] = x[i + 1:j]
-    return r
+def mutatie_inserare(pop, pm):
+    for i in range(len(pop)):
+        if numpy.random.uniform(0, 1) < pm:
+            n = len(pop[i]) - 1
+            indexes = numpy.random.choice(range(n), size=2, replace=False)
+            index1 = min(indexes)
+            index2 = max(indexes)
+            valEliminata = pop[i].pop(index2)
+            pop[i].insert(index1+1, valEliminata)
+            pop[i][-1] = fitness(pop[i][0:-1])
+    return pop
 
-
-def mutatie_populatie(pop, probabilitate_m):
-    pop_m = pop.copy()
-    dim = len(pop)
-    n = len(pop[0])
-    for i in range(dim):
-        r = np.random.uniform(0, 1)
-        if r <= probabilitate_m:
-            x = pop[i][0:n].copy()
-            x = inserare(x)
-            f = fitness(x)
-            x = list(x)
-            x = x + [f]
-            pop_m[i] = x.copy()
-    return pop_m
-
-
-pop = gen_pop(100, 5)
-pop_m = mutatie_populatie(pop, 0.2)
-print(pop_m)
+pop2 = mutatie_inserare(pop, 0.8)
+print(pop2)
